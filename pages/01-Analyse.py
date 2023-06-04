@@ -1077,19 +1077,20 @@ def dokumente(aktenzeichen):
     with tab2:
         st.subheader("Download von Dokumenten")
         
+        dateiname_gutachten = 'Gutachten-' +aktenzeichen + '.pdf'
         if gutachten is not None:
             st.download_button(
-            label="Download Gutachten als PDF",
-            data=gutachten,
-            file_name='Gutachten-' +aktenzeichen + '.pdf',
+            file_name=dateiname_gutachten,
+            label=dateiname_gutachten,
+            data=gutachten,          
             mime='application/octet-stream')
-            
-        expose = read_value(aktenzeichen, 'dokumente', 'expose')
+        
+        dateiname_expose =  'Expose-' +aktenzeichen + '.pdf'   
         if expose is not None:
             st.download_button(
-            label="Download Expose als PDF",
-            data=expose,
-            file_name='Expose-' +aktenzeichen + '.pdf',
+            file_name=dateiname_expose,
+            label=dateiname_expose,
+            data=expose,            
             mime='application/octet-stream')
 
 # Verbindung zur Datenbank herstellen
@@ -1098,7 +1099,8 @@ conn = sqlite3.connect(dbname)
 cursor = conn.cursor()
 
 # Struktur aufbauen
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(['Objekt', 'Basis', 'Erweiterte Anschaffungskosten', 'Mietgewinn', 'Steuern', 'Renditen', 'Beschreibung', 'Dokumente'])
+#tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(['Objekt', 'Basis', 'Erweiterte Anschaffungskosten', 'Mietgewinn', 'Steuern', 'Renditen', 'Beschreibung', 'Dokumente'])
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(['Objekt', 'Basis', 'Erweiterte Anschaffungskosten', 'Mietgewinn', 'Steuern', 'Renditen', 'Beschreibung'])
 
 with tab1:
     aktenzeichen = objekt()
@@ -1121,7 +1123,7 @@ with tab6:
 with tab7:
     beschreibung(aktenzeichen)
     
-with tab8:
-    dokumente(aktenzeichen)
+# with tab8:
+#     dokumente(aktenzeichen)
     
 sidebar(aktenzeichen, eigenkapitalrendite_aus_vermietung, rendite_aus_immobilienhandel, erweiterte_anschaffungskosten)
