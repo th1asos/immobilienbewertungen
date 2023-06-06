@@ -1021,39 +1021,39 @@ def beschreibung(aktenzeichen):
             
     with tab5:
         st.subheader("Karte")
-        strasse = read_value(aktenzeichen, 'basisdaten', 'strasse')
-        plz = read_value(aktenzeichen, 'basisdaten', 'plz')
-        ort = read_value(aktenzeichen, 'basisdaten', 'ort')
-        #st.caption(strasse)
-        st.caption(strasse + ", " + plz + " "+ ort)  
-
-        # OpenStreetMap API-URL
-        url = 'https://nominatim.openstreetmap.org/search'
-
-        # Benutzereingabe sammeln
-        query = strasse + ' ' + plz + ' ' + ort
-        #st.write("Query:", query)
-        # GET-Anfrage an OpenStreetMap senden
-        if query:
-            params = {'q': query, 'format': 'json'}
-            response = requests.get(url, params=params)
-            data = json.loads(response.text)
-            
-            # Erste Ergebnisposition auswählen
-            lat = float(data[0]['lat'])
-            lon = float(data[0]['lon'])
-            
-            st.write("Breitengrad: ", lat, "Längengrad: ", lon)
-            
-            # Streamlit-Karte erstellen und Koordinaten hinzufügen
-            m = folium.Map(location=[lat, lon], zoom_start=14)
-            #Draw(export=True).add_to(m)
-            tooltip = "Koordinaten: {}, {}".format(lat, lon)
-            folium.Marker([lat, lon], tooltip=tooltip).add_to(m)
-            folium_static(m)
-            
-            #df = pd.DataFrame((lat, lon), columns=['lat', 'lon'])
-            st.map(pd.DataFrame({'lat': [lat], 'lon': [lon]}), zoom=14)
+#         strasse = read_value(aktenzeichen, 'basisdaten', 'strasse')
+#         plz = read_value(aktenzeichen, 'basisdaten', 'plz')
+#         ort = read_value(aktenzeichen, 'basisdaten', 'ort')
+#         #st.caption(strasse)
+#         st.caption(strasse + ", " + plz + " "+ ort)  
+# 
+#         # OpenStreetMap API-URL
+#         url = 'https://nominatim.openstreetmap.org/search'
+# 
+#         # Benutzereingabe sammeln
+#         query = strasse + ' ' + plz + ' ' + ort
+#         #st.write("Query:", query)
+#         # GET-Anfrage an OpenStreetMap senden
+#         if query:
+#             params = {'q': query, 'format': 'json'}
+#             response = requests.get(url, params=params)
+#             data = json.loads(response.text)
+#             
+#             # Erste Ergebnisposition auswählen
+#             lat = float(data[0]['lat'])
+#             lon = float(data[0]['lon'])
+#             
+#             st.write("Breitengrad: ", lat, "Längengrad: ", lon)
+#             
+#             # Streamlit-Karte erstellen und Koordinaten hinzufügen
+#             m = folium.Map(location=[lat, lon], zoom_start=14)
+#             #Draw(export=True).add_to(m)
+#             tooltip = "Koordinaten: {}, {}".format(lat, lon)
+#             folium.Marker([lat, lon], tooltip=tooltip).add_to(m)
+#             folium_static(m)
+#             
+#             #df = pd.DataFrame((lat, lon), columns=['lat', 'lon'])
+#             st.map(pd.DataFrame({'lat': [lat], 'lon': [lon]}), zoom=14)
         
 def dokumente(aktenzeichen):
     tab1, tab2 = st.tabs(["Upload", "Download"])
