@@ -402,13 +402,14 @@ def erweiterte_anschaffungskosten(aktenzeichen):
         zuschlagskosten_betrag = st.number_input("Zuschlagskosten Betrag", value=zuschlagskosten_prozent / 100 * max_gebotspreis, disabled=True)
         
     with col1:
-        zinskosten_prozent_fuer_zuschlag = st.number_input("Zinskosten für den Zuschlag in Prozent", value=4.0, help = "4% Zinsen auf das Meistgebot für die Zeit vom Zuschlag bis zum Verteilungstermin (ca. 6-8 Wochen)", step=0.1)
+        zinskosten_prozent_fuer_zuschlag = st.number_input("Zinskosten für den Zuschlag in Prozent", value=4.0, help = "4% Zinsen auf das Meistgebot für die Zeit vom Zuschlag bis zum Verteilungstermin (ca. 6-8 Wochen) abzgl. Sicherheitsleistung", step=0.1)
     
     with col2:
         # 4% Zinsen auf das Meistgebot für die Zeit vom Zuschlag bis zum Verteilungstermin (ca. 6-8 Wochen)
         # kalkuliere mit 50 Tagen
         zinsen_tage = 50
-        zinskosten_betrag_fuer_zuschlag = st.number_input("Zinskosten für den Zuschlag", value=zinskosten_prozent_fuer_zuschlag * zinsen_tage * max_gebotspreis/ (100 * 365), disabled=True, help = "Kalkulation erfolgt für 50 Tage Zinsen nach Verteilungstermin")
+        sicherheitsleistung = 0.1 * verkehrswert
+        zinskosten_betrag_fuer_zuschlag = st.number_input("Zinskosten für den Zuschlag", value=zinskosten_prozent_fuer_zuschlag * zinsen_tage * (max_gebotspreis - sicherheitsleistung) / (100 * 365), disabled=True, help = "Kalkulation erfolgt für 50 Tage Zinsen nach Verteilungstermin")
         
     with col1:
         bankkredit = read_value(aktenzeichen, 'renditen', 'bankkredit')
