@@ -81,10 +81,10 @@ def objekt():
     return aktenzeichen
     
 def objekt_auswählen():       
-    cursor.execute("SELECT aktenzeichen, amtsgericht, versteigerungsdatum, titel, strasse, plz, ort, bundesland, objekt_art, baujahr, qm_wohnung, qm_grundstueck, anzahl_zimmer FROM basisdaten ORDER BY versteigerungsdatum ASC")
+    cursor.execute("SELECT aktenzeichen, amtsgericht, versteigerungsdatum, strasse, plz, ort, bundesland, titel, objekt_art, baujahr, qm_wohnung, qm_grundstueck, anzahl_zimmer FROM basisdaten ORDER BY versteigerungsdatum ASC")
     data = cursor.fetchall()
 
-    col_names=['Aktenzeichen', 'Amtsgericht', 'Versteigerungsdatum', 'Titel', 'Strasse', 'PLZ', 'Ort', 'Bundesland', 'Objekt-Art', 'Baujahr', 'QM Wohnung', 'QM Grundstück', ' Anzahl Zimmer']
+    col_names=['Aktenzeichen', 'Amtsgericht', 'Versteigerungsdatum', 'Strasse', 'PLZ', 'Ort', 'Bundesland', 'Titel', 'Objekt-Art', 'Baujahr', 'QM Wohnung', 'QM Grundstück', ' Anzahl Zimmer']
 
     df = pd.DataFrame(data, columns=col_names)
 
@@ -103,13 +103,6 @@ def objekt_auswählen():
         city_search_term = st.text_input('Ort')
     with col4:
         date_option = st.selectbox('Versteigerungsdatum', ['Zukünftige', 'Vergangene', 'Alle'])
-        
-#     if object_art_search_term == 'Alle':
-#         filtered_df = df[(df['Ort'].str.contains(city_search_term, case=False)) & (df['PLZ'].str.contains(plz_search_term, case=False))]    
-#     elif object_art_search_term != 'Alle':
-#         filtered_df = df[(df['Objekt-Art'].str.contains(object_art_search_term)) & (df['Ort'].str.contains(city_search_term, case=False)) & (df['PLZ'].str.contains(plz_search_term, case=False))]
-#     else:
-#         filtered_df = df[((df['Objekt-Art'].str.contains(object_art_search_term)) & df['Ort'].str.contains(city_search_term, case=False)) & (df['PLZ'].str.contains(plz_search_term, case=False))]
         
     if object_art_search_term == 'Alle' and date_option == 'Alle':
         filtered_df = df[(df['Ort'].str.contains(city_search_term, case=False)) & (df['PLZ'].str.contains(plz_search_term, case=False))]
@@ -138,12 +131,13 @@ def objekt_auswählen():
         
     # Zeige die gefilterte Datenbank an
     selected_object = st.dataframe(filtered_df, width=1200)
-    selected_object = st.selectbox('Wähle ein Objekt aus', filtered_df['Aktenzeichen'])
+    #selected_object = st.selectbox('Wähle ein Objekt aus', filtered_df['Aktenzeichen'])
+    selected_object = st.selectbox('Wähle ein Objekt aus', filtered_df['Aktenzeichen'] + ' - ' + filtered_df['Strasse'])
     
     aktenzeichen = None  # Standardwert für aktenzeichen
     
     if selected_object is not None:
-        selected_object_data = filtered_df[filtered_df['Aktenzeichen'] == selected_object]
+        selected_object_data = filtered_df[filtered_df['Aktenzeichen'] + ' - ' + filtered_df['Strasse']== selected_object]
         aktenzeichen = selected_object_data['Aktenzeichen'].values[0]
       
     return aktenzeichen
