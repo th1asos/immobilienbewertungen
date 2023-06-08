@@ -865,30 +865,26 @@ def beschreibung(aktenzeichen):
             st.info("https://geoportal-hamburg.de")
         
         objekt_beschreibung = read_value(aktenzeichen, 'objektbeschreibung', 'objekt_beschreibung')
-        if objekt_beschreibung == None:
-            objekt_beschreibung = ''
-        objekt_beschreibung = st.text_area('Objektbeschreibung',  value=objekt_beschreibung)
+        objekt_beschreibung = st.text_area('Objektbeschreibung',  value=objekt_beschreibung or '')
         
         ausstattung_beschreibung = read_value(aktenzeichen, 'objektbeschreibung', 'ausstattung_beschreibung')
-        if ausstattung_beschreibung == None:
-            ausstattung_beschreibung = ''
-        ausstattung_beschreibung = st.text_area('Ausstattungsbeschreibung',  value=ausstattung_beschreibung)
+        ausstattung_beschreibung = st.text_area('Ausstattungsbeschreibung',  value=ausstattung_beschreibung or '')
         
         besonderheiten= read_value(aktenzeichen, 'objektbeschreibung', 'besonderheiten')
-        if besonderheiten == None:
-            besonderheiten = ''
-        besonderheiten = st.text_area('Besonderheiten',  value=besonderheiten)
+        besonderheiten = st.text_area('Besonderheiten',  value=besonderheiten or '')
         
         maengel= read_value(aktenzeichen, 'objektbeschreibung', 'maengel')
-        if maengel == None:
-            maengel  = ''
-        maengel  = st.text_area('Mängel, Schäden, baulicher Zustand',  value=maengel )
+        maengel  = st.text_area('Mängel, Schäden, baulicher Zustand',  value=maengel or '' )
+        
+        eigene_einschaetzung = read_value(aktenzeichen, 'objektbeschreibung', 'eigene_einschaetzung')
+        eigene_einschaetzung  = st.text_area('Eigene Einschätzung, Fazit',  value=eigene_einschaetzung or '')
         
         if st.button("   Daten speichern!  "):
             update_table(aktenzeichen, 'objektbeschreibung', 'objekt_beschreibung', objekt_beschreibung)
             update_table(aktenzeichen, 'objektbeschreibung', 'ausstattung_beschreibung', ausstattung_beschreibung)
             update_table(aktenzeichen, 'objektbeschreibung', 'besonderheiten', besonderheiten)
             update_table(aktenzeichen, 'objektbeschreibung', 'maengel', maengel)
+            update_table(aktenzeichen, 'objektbeschreibung', 'eigene_einschaetzung', eigene_einschaetzung)
             
             st.write("Daten gespeichert")
         
