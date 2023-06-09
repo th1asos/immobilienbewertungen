@@ -3,6 +3,10 @@ st.set_page_config(page_title="Immobilienbewertung", page_icon="logo-thiasos.png
 
 st.header("Letzte Änderungen")
 
+st.subheader("Version 0.141 von 09. Juni 2023")
+st.text("Änderungen:")
+st.caption("* Bei der Auswahl des Objekts wird zusätzlich noch der Ort angezeigt.")
+
 st.subheader("Version 0.14 von 09. Juni 2023")
 st.text("Änderungen:")
 st.caption("* Bei der Auswahl eines Objekts wird nun auch die Straße in der Auswahl angezeigt. Dies erleichtert das Finden des gesuchten Objekts erheblich.")

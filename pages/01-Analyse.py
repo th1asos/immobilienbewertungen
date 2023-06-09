@@ -132,12 +132,12 @@ def objekt_auswählen():
     # Zeige die gefilterte Datenbank an
     selected_object = st.dataframe(filtered_df, width=1200)
     #selected_object = st.selectbox('Wähle ein Objekt aus', filtered_df['Aktenzeichen'])
-    selected_object = st.selectbox('Wähle ein Objekt aus', filtered_df['Aktenzeichen'] + ' - ' + filtered_df['Strasse'])
+    selected_object = st.selectbox('Wähle ein Objekt aus', filtered_df['Aktenzeichen'] + ' - ' + filtered_df['Strasse'] + ', ' + filtered_df['Ort'])
     
     aktenzeichen = None  # Standardwert für aktenzeichen
     
     if selected_object is not None:
-        selected_object_data = filtered_df[filtered_df['Aktenzeichen'] + ' - ' + filtered_df['Strasse']== selected_object]
+        selected_object_data = filtered_df[filtered_df['Aktenzeichen'] + ' - ' + filtered_df['Strasse'] + ', ' + filtered_df['Ort']== selected_object]
         aktenzeichen = selected_object_data['Aktenzeichen'].values[0]
       
     return aktenzeichen
