@@ -333,8 +333,26 @@ def basis(aktenzeichen):
     if url:
         st.write(url)
     
-    versteigerungsgrund = read_value(aktenzeichen, 'basisdaten', 'versteigerungsgrund')
-    versteigerungsgrund = st.text_input("Versteigerungsgrund", value=versteigerungsgrund or '')
+    col1, col2 = st.columns(2)
+    with col1:
+        versteigerungsgrund = read_value(aktenzeichen, 'basisdaten', 'versteigerungsgrund')
+        versteigerungsgrund = st.text_input("Versteigerungsgrund", value=versteigerungsgrund or '')
+        
+    with col2:
+        wertermittlungsstichtag = read_value(aktenzeichen, 'basisdaten', 'wertermittlungsstichtag')
+        if wertermittlungsstichtag == None:
+#             heutiges_datum = datetime.date.today()
+#             wertermittlungsstichtag = heutiges_datum.strftime("%Y-%m-%d")
+            jahr = int('2020')
+            monat = int('01')
+            tag = int('01')
+            wertermittlungsstichtag = st.date_input("Wertermittlungsstichtag", datetime.date(jahr, monat, tag), help="Datum, an dem der Gutachter das Objekt besichtigt hat")
+        else:
+            jahr, monat, tag = wertermittlungsstichtag.split("-")
+            jahr = int(jahr)
+            monat = int(monat)
+            tag = int(tag)
+            wertermittlungsstichtag = st.date_input("Wertermittlungsstichtag", datetime.date(jahr, monat, tag), help="Datum, an dem der Gutachter das Objekt besichtigt hat")
     
         
     if st.button("Daten speichern"):
@@ -347,6 +365,7 @@ def basis(aktenzeichen):
         update_table(aktenzeichen, 'basisdaten', 'strasse', strasse)
         update_table(aktenzeichen, 'basisdaten', 'plz', plz)
         update_table(aktenzeichen, 'basisdaten', 'ort', ort)
+        update_table(aktenzeichen, 'basisdaten', 'wertermittlungsstichtag', wertermittlungsstichtag)
         update_table(aktenzeichen, 'kaufkosten', 'grunderwerbssteuer_prozent', bundeslaender_dict[bundesland])
         update_table(aktenzeichen, 'basisdaten', 'url', url)
         update_table(aktenzeichen, 'basisdaten', 'versteigerungsgrund', versteigerungsgrund)
@@ -362,14 +381,10 @@ def erweiterte_anschaffungskosten(aktenzeichen):
     
     with col1:
         verkehrswert = read_value(aktenzeichen, 'schaetzwerte', 'verkehrswert')
-#         if verkehrswert == None:
-#             verkehrswert = 0.0
         verkehrswert = st.number_input("Verkehrswert laut Gutachten", value=verkehrswert or 0.0, step = 10000.0)
         
     with col2:
         max_gebotspreis= read_value(aktenzeichen, 'kaufkosten', 'max_gebotspreis')
-#         if max_gebotspreis == None:
-#             max_gebotspreis = 0.0
         max_gebotspreis = st.number_input("Max. Gebotspreis", value=max_gebotspreis or 0.0, step = 1000.0)
         
     with col1:
@@ -380,7 +395,6 @@ def erweiterte_anschaffungskosten(aktenzeichen):
         grunderwerbssteuer_prozent = read_value(aktenzeichen, 'kaufkosten', 'grunderwerbssteuer_prozent')
         if grunderwerbssteuer_prozent == None:
             grunderwerbssteuer_prozent = 0.0
-        #st.write("Bundesland:", bundesland)
         grunderwerbssteuer_prozent = st.number_input("Grunderwerbssteuer Prozent ("+bundesland+")", value=grunderwerbssteuer_prozent * 100, disabled=True)
         
     with col2:
@@ -406,19 +420,11 @@ def erweiterte_anschaffungskosten(aktenzeichen):
         zinskosten_betrag_fuer_zuschlag = st.number_input("Zinskosten für den Zuschlag", value=zinskosten_prozent_fuer_zuschlag * zinsen_tage * (max_gebotspreis - sicherheitsleistung) / (100 * 365), disabled=True, help = "Kalkulation erfolgt für 50 Tage Zinsen nach Verteilungstermin")
         
     with col1:
-        bankkredit = read_value(aktenzeichen, 'renditen', 'bankkredit')
+        #bankkredit = read_value(aktenzeichen, 'renditen', 'bankkredit')
         notarkosten_prozent = read_value(aktenzeichen, 'kaufkosten', 'notarkosten_prozent')
-        if notarkosten_prozent == None or notarkosten_prozent == 0:
-            notarkosten_prozent = 0.015 # Default-Wert
-        if bankkredit == None:
-            bankkredit = 0
-        if bankkredit == 0: # es wird kein Kredit aufgenommen           
+        if notarkosten_prozent == None:
             notarkosten_prozent = 0.0
-            maxvalue = 0.0
-        else:
-            maxvalue = 5.0
-        
-        notarkosten_prozent = st.number_input("Notarkosten Prozent", value=notarkosten_prozent * 100, min_value = 0.0, max_value = maxvalue, help = "(1,5%-2%, wenn Hypothek ins Grundbuch eingetragen wird", step=0.1)
+        notarkosten_prozent = st.number_input("Notarkosten Prozent", value=notarkosten_prozent * 100 or 0.0, min_value = 0.0, max_value = 5.0, help = "(1,5%-2%, wenn Hypothek ins Grundbuch eingetragen wird", step=0.1)
         
     with col2:
         notarkosten_betrag = st.number_input("Notarkosten Betrag", value=notarkosten_prozent / 100 * max_gebotspreis, disabled=True)
@@ -442,6 +448,24 @@ def erweiterte_anschaffungskosten(aktenzeichen):
     erweiterte_anschaffungskosten = max_gebotspreis + grunderwerbssteuer_betrag + zuschlagskosten_betrag + round(zinskosten_betrag_fuer_zuschlag,2) + notarkosten_betrag + renovierungskosten + umbaukosten
     st.write("Die gesamten Anschaffungskosten belaufen sich auf ", erweiterte_anschaffungskosten, " Euro")
     
+    st.subheader("Gewünschte Mindestrendite")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        gewuenschte_mindestrendite = read_value(aktenzeichen, 'renditen', 'gewuenschte_mindestrendite')
+        if gewuenschte_mindestrendite == None:
+            gewuenschte_mindestrendite = 0.0
+        gewuenschte_mindestrendite  = st.number_input("Gewünschte Mindestrendite in Prozent", value=gewuenschte_mindestrendite *100, min_value = 0.0, step=1.0)
+        
+    with col2:
+        marktwert_nach_aufwertung = read_value(aktenzeichen, 'renditen', 'marktwert_nach_aufwertung')
+        if marktwert_nach_aufwertung is not None:
+            vorgeschlagener_gebotspreis = (marktwert_nach_aufwertung / (gewuenschte_mindestrendite/100 +1))  - grunderwerbssteuer_betrag - zuschlagskosten_betrag - round(zinskosten_betrag_fuer_zuschlag,2) - notarkosten_betrag - renovierungskosten - umbaukosten
+        else:
+            vorgeschlagener_gebotspreis = 0.0
+        #st.write("Vorschlag Gebotspreis für eine Rendite von ", gewuenschte_rendite * 100, "%: ", vorgeschlagener_gebotspreis)
+        vorgeschlagener_gebotspreis  = st.number_input("Vorschlag Max. Gebotspreis", value=round(vorgeschlagener_gebotspreis,0), min_value = 0.0, disabled = False)
+    
     if st.button("Daten speichern "):
         update_table(aktenzeichen, 'schaetzwerte', 'verkehrswert', verkehrswert)
         update_table(aktenzeichen, 'kaufkosten', 'max_gebotspreis', max_gebotspreis)
@@ -450,6 +474,7 @@ def erweiterte_anschaffungskosten(aktenzeichen):
         update_table(aktenzeichen, 'kaufkosten', 'notarkosten_prozent', notarkosten_prozent/100)
         update_table(aktenzeichen, 'kaufkosten', 'renovierungskosten', renovierungskosten)
         update_table(aktenzeichen, 'kaufkosten', 'umbaukosten', umbaukosten)
+        update_table(aktenzeichen, 'renditen', 'gewuenschte_mindestrendite', gewuenschte_mindestrendite/100)
         st.write("Daten wurden gespeichert")
         
     return erweiterte_anschaffungskosten
@@ -748,10 +773,10 @@ def renditeberechnung(aktenzeichen, erweiterte_anschaffungskosten, jaehrliche_ne
             # Diese updates müssen hier stehen    
             update_table(aktenzeichen, 'renditen', 'eigenkapital', eigenkapital)
             update_table(aktenzeichen, 'renditen', 'bankkredit', fremdkapital)
-            if fremdkapital >0:
-                update_table(aktenzeichen, 'kaufkosten', 'notarkosten_prozent', 0.015)
-            else:
-                update_table(aktenzeichen, 'kaufkosten', 'notarkosten_prozent', 0.0)
+#             if fremdkapital >0:
+#                 update_table(aktenzeichen, 'kaufkosten', 'notarkosten_prozent', 0.015)
+#             else:
+#                 update_table(aktenzeichen, 'kaufkosten', 'notarkosten_prozent', 0.0)
         if st.button("Daten speichern   "):                
             update_table(aktenzeichen, 'renditen', 'kreditzinssatz', kreditzinssatz)
             update_table(aktenzeichen, 'renditen', 'laufzeit', laufzeit)
@@ -759,17 +784,17 @@ def renditeberechnung(aktenzeichen, erweiterte_anschaffungskosten, jaehrliche_ne
             
             st.write("Daten gespeichert!")
             
-            if fremdkapital > 0:
-                # es fallen Notarkosten an
-                st.warning("Es fällt ein Kredit an. Die Notarkosten wurden auf 1,5% gesetzt und können in den **Erweiterten Anschaffungskosten** geändert werden")
-                time.sleep(5)
-                st.experimental_rerun()
-            else:
-                # es fallen keine Notarkosten an
-                update_table(aktenzeichen, 'kaufkosten', 'notarkosten_prozent', 0.0)
-                st.info("Es fällt kein Kredit an. Die Notarkosten wurden auf Null gesetzt. ")
-                time.sleep(5)
-                st.experimental_rerun()
+#             if fremdkapital > 0:
+#                 # es fallen Notarkosten an
+#                 st.warning("Es fällt ein Kredit an. Die Notarkosten wurden auf 1,5% gesetzt und können in den **Erweiterten Anschaffungskosten** geändert werden")
+#                 time.sleep(5)
+#                 st.experimental_rerun()
+#             else:
+#                 # es fallen keine Notarkosten an
+#                 update_table(aktenzeichen, 'kaufkosten', 'notarkosten_prozent', 0.0)
+#                 st.info("Es fällt kein Kredit an. Die Notarkosten wurden auf Null gesetzt. ")
+#                 time.sleep(5)
+#                 st.experimental_rerun()
                 
     with tab2:
         immowelt_objekt = read_value(aktenzeichen, 'schaetzwerte', 'immowelt_objekt')
@@ -850,7 +875,7 @@ def renditeberechnung(aktenzeichen, erweiterte_anschaffungskosten, jaehrliche_ne
     return eigenkapitalrendite_aus_vermietung, rendite_aus_immobilienhandel
         
 def beschreibung(aktenzeichen):
-    tab1, tab2, tab3, tab4, tab5= st.tabs(['Objektbeschreibung', 'Schätzwerte', 'Allgemeines', 'Abschluss', 'Map'])
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7= st.tabs(['Objektbeschreibung', 'Schätzwerte', 'Allgemeines', 'Sanierungspflicht', 'Abschluss', 'Map', 'Bewertung'])
     
     with tab1:
         st.subheader("Objektbeschreibung")
@@ -870,15 +895,11 @@ def beschreibung(aktenzeichen):
         maengel= read_value(aktenzeichen, 'objektbeschreibung', 'maengel')
         maengel  = st.text_area('Mängel, Schäden, baulicher Zustand',  value=maengel or '' )
         
-        eigene_einschaetzung = read_value(aktenzeichen, 'objektbeschreibung', 'eigene_einschaetzung')
-        eigene_einschaetzung  = st.text_area('Eigene Einschätzung, Fazit',  value=eigene_einschaetzung or '')
-        
         if st.button("   Daten speichern!  "):
             update_table(aktenzeichen, 'objektbeschreibung', 'objekt_beschreibung', objekt_beschreibung)
             update_table(aktenzeichen, 'objektbeschreibung', 'ausstattung_beschreibung', ausstattung_beschreibung)
             update_table(aktenzeichen, 'objektbeschreibung', 'besonderheiten', besonderheiten)
             update_table(aktenzeichen, 'objektbeschreibung', 'maengel', maengel)
-            update_table(aktenzeichen, 'objektbeschreibung', 'eigene_einschaetzung', eigene_einschaetzung)
             
             st.write("Daten gespeichert")
         
@@ -1002,6 +1023,29 @@ def beschreibung(aktenzeichen):
             st.write("Daten gespeichert")
             
     with tab4:
+        st.subheader("Sanierungspflicht")
+        
+        st.warning("Diese Daten werden noch nicht in anderen Programmteilen verwendet!")
+        
+        dach_daemmen = read_value(aktenzeichen, 'sanierungskosten', 'dach_daemmen')
+        dach_daemmen = st.number_input('Dach dämmen', value=dach_daemmen or 0.0, step = 1000.0, help="Oberste Geschossdecken oder Dach dämmen (§ 47 GEG)")
+        st.info("Ist der Dachraum unbewohnt und nicht beheizt, ist eine Dämmung der obersten Geschossdecke nachzurüsten – zumindest dann, wenn diese nicht die Mindestanforderungen an den Wärmeschutz erfüllt. Der Wärmedurchgangskoeffizient (U-Wert) darf nicht über 0,24 W/m²K liegen. Die Sanierungspflicht gilt auch als erfüllt, wenn man die Dachflächen dämmt. Das ist zum Beispiel sinnvoll, wenn ein spätere Dachausbau geplant ist.")
+        
+        heizkessel_erneuern = read_value(aktenzeichen, 'sanierungskosten', 'heizkessel_erneuern')
+        heizkessel_erneuern = st.number_input('Heizkessel erneuern', value=heizkessel_erneuern or 0.0, step = 1000.0, help="Heizkessel erneuern (§ 72 GEG)")
+        st.info("Alte Öl- und Gasheizungen müssen nach 30 Jahren Laufzeit ausgetauscht werden. Die Sanierungspflicht gilt für sogenannte Standard- und Konstanttemperaturkessel. Niedertemperatur- und Brennwertheizungen sind davon noch ausgenommen. Nach den Plänen der Bundesregierung dürfen ab 01. Januar 2024 ausschließlich Heizungsanlagen eingebaut werden, die mindestens mit 65 Prozent erneuerbaren Energien oder unvermeidbarer Abwärme betrieben werden.")
+        
+        rohre_daemmen = read_value(aktenzeichen, 'sanierungskosten', 'rohre_daemmen')
+        rohre_daemmen = st.number_input('Warmwasserführende Rohre dämmen ', value=rohre_daemmen or 0.0, step = 1000.0, help="Warmwasserführende Rohre dämmen (§ 71 GEG)")
+        st.info("Sind Heizungs- und Warmwasserrohre oder Armaturen nicht gedämmt, muss dies in unbeheizten Räumen, z. B. im Keller, nachgeholt werden.")
+        
+        if st.button("  Daten speichern!    "):
+            update_table(aktenzeichen, 'sanierungskosten', 'dach_daemmen', dach_daemmen)
+            update_table(aktenzeichen, 'sanierungskosten', 'heizkessel_erneuern', heizkessel_erneuern)
+            update_table(aktenzeichen, 'sanierungskosten', 'rohre_daemmen', rohre_daemmen)
+            st.write("Daten gespeichert")
+             
+    with tab5:
         st.subheader("Abschließende Betrachtungen")
         
         termin_aufgehoben = read_value(aktenzeichen, 'abschluss', 'termin_aufgehoben')
@@ -1010,7 +1054,7 @@ def beschreibung(aktenzeichen):
         if st.button("   Daten speichern!   "):
             update_table(aktenzeichen, 'abschluss', 'termin_aufgehoben', termin_aufgehoben)
             
-    with tab5:
+    with tab6:
         st.subheader("Karte")
         strasse = read_value(aktenzeichen, 'basisdaten', 'strasse')
         plz = read_value(aktenzeichen, 'basisdaten', 'plz')
@@ -1049,6 +1093,31 @@ def beschreibung(aktenzeichen):
                 
             except json.JSONDecodeError:
                 st.error("Fehler beim Verarbeiten der JSON-Daten")
+                
+    with tab7:
+        st.subheader("Bewertung des Objekts")
+        
+        positiv = read_value(aktenzeichen, 'objektbewertung', 'positiv')
+        positiv = st.text_area('Positive Punkte (betrifft Gegenwart)',  value=positiv or '')
+        
+        negativ = read_value(aktenzeichen, 'objektbewertung', 'negativ')
+        negativ = st.text_area('Negative Punkte (betrifft Gegenwart)',  value=negativ or '')
+        
+        chancen = read_value(aktenzeichen, 'objektbewertung', 'chancen')
+        chancen = st.text_area('Welche Chancen gibt es? (Betrifft Zukunft)',  value=chancen or '')
+        
+        risiken = read_value(aktenzeichen, 'objektbewertung', 'risiken')
+        risiken = st.text_area('Welche Risiken gibt es? (Betrifft Zukunft)',  value=risiken or '')
+        
+        fazit = read_value(aktenzeichen, 'objektbewertung', 'fazit')
+        fazit  = st.text_area('Eigene Einschätzung, Fazit',  value=fazit or '')
+        
+        if st.button("   Daten speichern!    "):     
+            update_table(aktenzeichen, 'objektbewertung', 'positiv', positiv)
+            update_table(aktenzeichen, 'objektbewertung', 'negativ', negativ)
+            update_table(aktenzeichen, 'objektbewertung', 'chancen', chancen)
+            update_table(aktenzeichen, 'objektbewertung', 'risiken', risiken)
+            update_table(aktenzeichen, 'objektbewertung', 'fazit', fazit)
         
 def dokumente(aktenzeichen):
     tab1, tab2 = st.tabs(["Upload", "Download"])
